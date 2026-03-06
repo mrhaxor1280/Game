@@ -1,89 +1,121 @@
 import streamlit as st
 import random
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Streamlit Ludo", layout="centered")
 
-players = ["Ali","Sara","Ahmed","Ayesha"]
+# --- GAME STATE ---
+if "players" not in st.session_state:
+    st.session_state.players = {
+        "Red": {"pos": 0, "color": "#e74c3c"},
+        "Blue": {"pos": 0, "color": "#3498db"},
+        "Green": {"pos": 0, "color": "#2ecc71"},
+        "Yellow": {"pos": 0, "color": "#f1c40f"},
+    }
 
-colors = {
-    "Ali":"red",
-    "Sara":"green",
-    "Ahmed":"blue",
-    "Ayesha":"orange"
-}
+if "turn" not in st.session_state:
+    st.session_state.turn = "Red"
 
-if "pos" not in st.session_state:
-    st.session_state.pos = {p:0 for p in players}
-    st.session_state.turn = 0
-    st.session_state.papers = [1,2,2,3,-1,-1,-2,-2]
+if "dice" not in st.session_state:
+    st.session_state.dice = None
 
-st.title("🎯 Race To 16")
+# --- BOARD PATH (simplified 40 cells) ---
+BOARD_SIZE = 40
 
-current_player = players[st.session_state.turn % 4]
-st.write("Current Turn:", current_player)
+# --- FUNCTIONS ---
 
-if st.button("Play Turn"):
-
-    if st.session_state.papers:
-
-        paper = random.choice(st.session_state.papers)
-        st.session_state.papers.remove(paper)
-
-        st.session_state.pos[current_player] += paper
-
-        st.success(f"{current_player} drew {paper}")
-
-    for p in players:
-        if p != current_player:
-            st.session_state.pos[p] += 1
-
-    st.session_state.turn += 1
+def roll_dice():
+    st.session_state.dice = random.randint(1, 6)
 
 
-size = 17
-center = 8
+def move_player():
+    player = st.session_state.turn
+    steps = st.session_state.dice
 
-board = [["" for _ in range(size)] for _ in range(size)]
+    if steps is None:
+        return
 
-def tile(color,text=""):
-    return f"""
-    <div style="
-    width:35px;
-    height:35px;
-    background:{color};
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border:1px solid black;
-    font-size:12px;
-    ">
-    {text}
-    </div>
-    """
+    st.session_state.players[player]["pos"] = (
+        st.session_state.players[player]["pos"] + steps
+    ) % BOARD_SIZE
 
-html = ""
+    next_turn()
 
-for r in range(size):
 
-    html += "<div style='display:flex;'>"
+def next_turn():
+    order = list(st.session_state.players.keys())
+    i = order.index(st.session_state.turn)
+    st.session_state.turn = order[(i + 1) % 4]
 
-    for c in range(size):
 
-        cell_color = "#eee"
-        text = ""
+# --- UI ---
+st.title("🎲 Streamlit Ludo Game (4 Players)")
 
-        if r == center and c == center:
-            cell_color = "gold"
-            text = "16"
+st.write(f"**Current Turn:** {st.session_state.turn}")
 
-        if c == center:
-            cell_color = "#ffcccc"
+col1, col2 = st.columns(2)
 
-        if r == center:
-            cell_color = "#ccffcc"
+with col1:
+    if st.button("Roll Dice"):
+        roll_dice()
 
-        html += tile(cell_color,text)
+with col2:
+    if st.button("Move Token"):
+        move_player()
 
-    html += "</div>"
+if st.session_state.dice:
+    st.success(f"Dice rolled: {st.session_state.dice}")
 
-st.markdown(html, unsafe_allow_html=True)
+
+# --- DRAW BOARD ---
+board = ["" for _ in range(BOARD_SIZE)]
+
+for name, data in st.session_state.players.items():
+    pos = data["pos"]
+    board[pos] += name[0]
+
+st.subheader("Board")
+
+rows = 8
+cols = 5
+
+for r in range(rows):
+    cols_ui = st.columns(cols)
+    for c in range(cols):
+        i = r * cols + c
+        if i < BOARD_SIZE:
+            token = board[i]
+
+            bg = "#ecf0f1"
+
+            if "R" in token:
+                bg = "#e74c3c"
+            if "B" in token:
+                bg = "#3498db"
+            if "G" in token:
+                bg = "#2ecc71"
+            if "Y" in token:
+                bg = "#f1c40f"
+
+            cols_ui[c].markdown(
+                f"""
+                <div style='
+                height:70px;
+                border-radius:10px;
+                background:{bg};
+                display:flex;
+                align-items:center;
+                justify-content:center;
+                font-weight:bold;
+                font-size:20px;'>
+                {token}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
+st.markdown("---")
+st.write("Player Positions")
+
+for p, d in st.session_state.players.items():
+    st.write(p, "→", d["pos"])
