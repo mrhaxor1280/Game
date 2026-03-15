@@ -5,9 +5,7 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="PowerDice X – 7 Steps", page_icon="⭐", layout="wide")
 
-# ────────────────────────────────────────────────
-# SESSION STATE
-# ────────────────────────────────────────────────
+# Session state
 if "player_names" not in st.session_state:
     st.session_state.player_names = None
 
@@ -40,23 +38,19 @@ if st.session_state.player_names is None:
 
     st.stop()
 
-# ────────────────────────────────────────────────
-# GAME VARIABLES
-# ────────────────────────────────────────────────
+# Game variables
 names   = st.session_state.player_names
 emojis  = ["🔵", "🟠", "🟢", "🔴"]
 colors  = ["#3399ff", "#ff8800", "#44cc77", "#ff3366"]
 MAX_POS = 8   # win at 8
 
-# ────────────────────────────────────────────────
-# STYLES – cleaner X layout
-# ────────────────────────────────────────────────
+# Styles – optimized for visibility & clean X
 st.markdown("""
 <style>
     .board {
         position: relative;
         width: 1000px;
-        height: 700px;
+        height: 720px;
         margin: 40px auto;
         background: #0a0a1f;
         border-radius: 20px;
@@ -67,21 +61,22 @@ st.markdown("""
         position: absolute;
         display: flex;
         flex-direction: row;
-        gap: 5px;
+        gap: 6px;
+        align-items: center;
     }
     .cell {
-        width: 45px;
-        height: 45px;
+        width: 46px;
+        height: 46px;
         border-radius: 10px;
-        border: 2px solid #ffffff44;
-        background: #111133;
+        border: 2px solid rgba(255,255,255,0.3);
+        background: rgba(20,20,60,0.8);
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
         color: #ffffff;
-        font-size: 16px;
-        box-shadow: inset 0 0 6px #000;
+        font-size: 18px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.6);
         position: relative;
     }
     .token {
@@ -89,12 +84,12 @@ st.markdown("""
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        font-size: 20px;
+        font-size: 22px;
         border: 2px solid #000;
-        box-shadow: 0 0 12px currentColor;
+        box-shadow: 0 0 14px currentColor;
         z-index: 10;
     }
     .star {
@@ -102,18 +97,18 @@ st.markdown("""
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 120px;
+        font-size: 140px;
         color: #ff4444;
-        text-shadow: 0 0 30px #ff0000;
+        text-shadow: 0 0 40px #ff0000;
         z-index: 5;
     }
     .player-name {
         font-size: 18px;
         font-weight: bold;
-        text-align: center;
-        margin-bottom: 8px;
         color: inherit;
-        text-shadow: 0 0 6px currentColor;
+        text-shadow: 0 0 8px currentColor;
+        margin-right: 10px;
+        white-space: nowrap;
     }
     .neon-title {
         font-size: 56px;
@@ -138,7 +133,7 @@ if st.session_state.winner:
         <div style="font-size:100px; color:{colors[idx]};">
             {emojis[idx]} {st.session_state.winner} {emojis[idx]}
         </div>
-        <p style="font-size:28px;">Reached position 8 (center) first!</p>
+        <p style="font-size:28px;">Reached position 8 first!</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -172,10 +167,8 @@ for i, col in enumerate(cols):
         </div>
         """, unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────
-# CLEAN X LAYOUT – ONE ROW PER ARM
-# ────────────────────────────────────────────────
-st.markdown("### X-Cross – 7 Steps to the Center")
+# Board – single row per arm, clean X
+st.markdown("### 7 Steps to the Center Star")
 
 def create_arm(player_idx):
     pos = st.session_state.positions[player_idx]
@@ -190,15 +183,15 @@ def create_arm(player_idx):
     if 1 <= pos <= 7:
         token_html = f'<div class="token" style="background:{color}">{emoji}</div>'
 
-    # Adjusted for better spacing and less overlap
-    top_pos  = ["18%", "18%", "55%", "55%"][player_idx]
-    left_pos = ["10%", "52%", "10%", "52%"][player_idx]
+    # Optimized positions & angles for clean cross
+    top_pos  = ["20%", "20%", "52%", "52%"][player_idx]
+    left_pos = ["12%", "50%", "12%", "50%"][player_idx]
     angle    = [-45, 45, -135, 135][player_idx]
 
     return f"""
     <div class="arm" style="top:{top_pos}; left:{left_pos}; transform:rotate({angle}deg);">
         <div class="player-name" style="color:{color}">{name}</div>
-        <div style="display:flex; gap:5px;">{cells}</div>
+        <div style="display:flex; gap:6px;">{cells}</div>
         {token_html}
     </div>
     """
@@ -206,7 +199,7 @@ def create_arm(player_idx):
 center_tokens = ""
 for i in range(4):
     if st.session_state.positions[i] == MAX_POS:
-        center_tokens += f'<div class="token" style="background:{colors[i]}; width:44px; height:44px; font-size:28px; margin:4px;">{emojis[i]}</div>'
+        center_tokens += f'<div class="token" style="background:{colors[i]}; width:48px; height:48px; font-size:30px; margin:6px;">{emojis[i]}</div>'
 
 board_html = f"""
 <div class="board">
@@ -215,7 +208,7 @@ board_html = f"""
     {create_arm(2)}
     {create_arm(3)}
     <div class="star">⭐</div>
-    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; flex-wrap:wrap; gap:8px; width:220px; justify-content:center; z-index:10;">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; flex-wrap:wrap; gap:10px; width:240px; justify-content:center; z-index:10;">
         {center_tokens}
     </div>
 </div>
@@ -223,9 +216,7 @@ board_html = f"""
 
 components.html(board_html, height=850, scrolling=False)
 
-# ────────────────────────────────────────────────
-# GAME CONTROLS
-# ────────────────────────────────────────────────
+# Controls
 curr = st.session_state.current_turn
 curr_name = names[curr]
 
@@ -283,7 +274,7 @@ if st.button(f"ROLL DICE – {curr_name}", type="primary", use_container_width=T
 
 with st.expander("Rules – 7 Steps Version"):
     st.markdown("""
-- Each player has their own path: positions **1 to 7**
+- Each player has their own path: **positions 1 to 7**
 - The **center (position 8)** is the star ⭐ – first to reach it wins
 - Every round: **all players** move +1 forward
 - Power player rolls extra: **+1** or **+2** (green) / **-1** or **-2** (red)
@@ -291,4 +282,4 @@ with st.expander("Rules – 7 Steps Version"):
 - Positions cannot go below 1
     """)
 
-st.caption("7 steps only • one row per arm • clean X layout • enjoy!")
+st.caption("Single row per arm • 7 steps • clean visible numbers • centered tokens")
