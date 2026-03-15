@@ -5,35 +5,19 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="PowerDice X-Cross", page_icon="⭐", layout="wide")
 
-# ────────────────────────────────────────────────
-# SESSION STATE
-# ────────────────────────────────────────────────
+# Session state
 if "player_names" not in st.session_state:
     st.session_state.player_names = None
 
 if st.session_state.player_names is None:
     st.markdown("""
     <style>
-        .welcome {
-            background: linear-gradient(135deg, #0a0015, #200033);
-            padding: 50px 20px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 0 50px #ff0066;
-            margin: 20px;
-        }
-        .title {
-            font-size: 60px;
-            background: linear-gradient(90deg, #ff0066, #00ccff, #ffff00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        .welcome {background: linear-gradient(135deg, #0a0015, #200033); padding:60px; border-radius:25px; text-align:center; box-shadow:0 0 50px #ff0066; margin:20px;}
+        .title {font-size:64px; background:linear-gradient(90deg,#ff3366,#00ccff,#ffff00); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
     </style>
     """, unsafe_allow_html=True)
 
-    st.markdown('<div class="welcome"><h1 class="title">POWER DICE X-CROSS</h1><p style="font-size:22px; color:#ffcc00;">Reach the center star first!</p></div>', unsafe_allow_html=True)
-
-    st.markdown("### Enter player names (or keep defaults)", unsafe_allow_html=True)
+    st.markdown('<div class="welcome"><h1 class="title">POWER DICE X-CROSS</h1><p style="color:#ffcc33; font-size:24px;">Reach the center star first!</p></div>', unsafe_allow_html=True)
 
     defaults = ["Player 1", "Player 2", "Player 3", "Player 4"]
     names_input = []
@@ -44,7 +28,7 @@ if st.session_state.player_names is None:
             name = st.text_input(f"Player {i+1}", value=defaults[i], key=f"init_{i}")
             names_input.append(name.strip() or defaults[i])
 
-    if st.button("Start Game", type="primary", use_container_width=True):
+    if st.button("START GAME", type="primary", use_container_width=True):
         st.session_state.player_names = names_input
         st.session_state.positions = [1, 1, 1, 1]
         st.session_state.current_turn = 0
@@ -54,65 +38,60 @@ if st.session_state.player_names is None:
 
     st.stop()
 
-# ────────────────────────────────────────────────
-# GAME VARIABLES
-# ────────────────────────────────────────────────
+# Game variables
 names   = st.session_state.player_names
 emojis  = ["🔵", "🟠", "🟢", "🔴"]
 colors  = ["#3399ff", "#ff8800", "#44cc77", "#ff3366"]
 
-# ────────────────────────────────────────────────
-# STYLES
-# ────────────────────────────────────────────────
+# Styles – improved contrast & spacing
 st.markdown("""
 <style>
     .board {
         position: relative;
-        width: 950px;
-        height: 700px;
-        margin: 30px auto;
-        background: rgba(10,10,30,0.4);
-        border-radius: 16px;
-        border: 2px solid #444;
+        width: 1000px;
+        height: 800px;
+        margin: 40px auto;
+        background: #0a0a1f;
+        border-radius: 20px;
+        border: 3px solid #444;
+        overflow: hidden;
     }
     .arm {
         position: absolute;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
     }
     .row {
         display: flex;
-        gap: 3px;
+        gap: 4px;
     }
     .cell {
-        width: 42px;
-        height: 42px;
-        border-radius: 6px;
-        border: 2px solid #222;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        border: 2px solid #fff;
+        background: #111133;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        color: white;
-        font-size: 13px;
+        color: #ffffff;
+        font-size: 14px;
         position: relative;
-        box-shadow: 0 0 8px rgba(0,0,0,0.6);
+        box-shadow: inset 0 0 6px rgba(0,0,0,0.7);
     }
     .token {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         font-size: 18px;
         border: 2px solid #000;
-        box-shadow: 0 0 12px currentColor;
+        box-shadow: 0 0 10px currentColor;
         z-index: 10;
     }
     .star {
@@ -120,19 +99,22 @@ st.markdown("""
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-size: 90px;
-        text-shadow: 0 0 20px #ffff66;
+        font-size: 110px;
+        color: #ffff66;
+        text-shadow: 0 0 30px #ffff00;
         z-index: 5;
     }
     .player-name {
         font-size: 18px;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
+        color: inherit;
+        text-shadow: 0 0 6px currentColor;
         white-space: nowrap;
     }
     .neon-title {
-        font-size: 54px;
+        font-size: 56px;
         background: linear-gradient(90deg, #ff3366, #00ccff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -149,9 +131,9 @@ if st.session_state.winner:
     idx = names.index(st.session_state.winner)
     st.balloons()
     st.markdown(f"""
-    <div style="text-align:center; padding:40px; background:rgba(255,60,60,0.2); border:6px solid #ff4444; border-radius:20px;">
-        <h1 style="font-size:70px; color:#ffdd00;">WINNER!</h1>
-        <div style="font-size:90px; color:{colors[idx]};">
+    <div style="text-align:center; padding:50px; background:rgba(255,80,80,0.2); border:8px solid #ff4444; border-radius:25px;">
+        <h1 style="font-size:80px; color:#ffff66;">WINNER!</h1>
+        <div style="font-size:100px; color:{colors[idx]};">
             {emojis[idx]} {st.session_state.winner} {emojis[idx]}
         </div>
     </div>
@@ -178,18 +160,16 @@ for i, col in enumerate(cols):
         pos = st.session_state.positions[i]
         prog = min(pos / 16, 1)
         st.markdown(f"""
-        <div style="padding:14px; border-radius:12px; text-align:center; border:3px solid {colors[i]}; background:rgba(20,20,50,0.7);">
+        <div style="padding:16px; border-radius:14px; text-align:center; border:3px solid {colors[i]}; background:rgba(20,20,50,0.7);">
             <h3 style="color:{colors[i]};">{emojis[i]} {names[i]}</h3>
-            <div style="font-size:32px; color:#ffdd88;">{pos}</div>
-            <div style="height:12px; background:#111; border-radius:6px; overflow:hidden; margin-top:6px;">
-                <div style="height:100%; width:{prog*100}%; background:{colors[i]};"></div>
+            <div style="font-size:36px; color:#ffdd88;">{pos}</div>
+            <div style="height:14px; background:#111; border-radius:8px; overflow:hidden; margin-top:8px;">
+                <div style="height:100%; width:{prog*100}%; background:linear-gradient(to right, #ffdd88, {colors[i]});"></div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-# ────────────────────────────────────────────────
-# X-CROSS BOARD – USING components.html
-# ────────────────────────────────────────────────
+# Board – using components.html
 st.markdown("### X-Cross Path to Center Star")
 
 def create_arm(player_idx):
@@ -202,16 +182,17 @@ def create_arm(player_idx):
     row1 = numbers[:8]
     row2 = numbers[8:]
 
-    cells_row1 = "".join(f'<div class="cell" style="background:{color}">{n}</div>' for n in row1)
-    cells_row2 = "".join(f'<div class="cell" style="background:{color}">{n}</div>' for n in row2)
+    cells_row1 = "".join(f'<div class="cell" style="color:#fff">{n}</div>' for n in row1)
+    cells_row2 = "".join(f'<div class="cell" style="color:#fff">{n}</div>' for n in row2)
 
     token_html = ""
     if 1 <= pos <= 15:
         token_html = f'<div class="token" style="background:{color}">{emoji}</div>'
 
-    top_pos = ["22%", "22%", "60%", "60%"][player_idx]
-    left_pos = ["6%", "58%", "6%", "58%"][player_idx]
-    angle = [-45, 45, -135, 135][player_idx]
+    # Adjusted positions & angles for less overlap & better look
+    top_pos  = ["15%", "15%", "58%", "58%"][player_idx]
+    left_pos = ["8%", "55%", "8%", "55%"][player_idx]
+    angle    = [-40, 40, -140, 140][player_idx]
 
     return f"""
     <div class="arm" style="top:{top_pos}; left:{left_pos}; transform:rotate({angle}deg);">
@@ -225,7 +206,7 @@ def create_arm(player_idx):
 center_tokens = ""
 for i in range(4):
     if st.session_state.positions[i] == 16:
-        center_tokens += f'<div class="token" style="background:{colors[i]}; width:40px; height:40px; font-size:26px; margin:4px;">{emojis[i]}</div>'
+        center_tokens += f'<div class="token" style="background:{colors[i]}; width:42px; height:42px; font-size:28px; margin:4px;">{emojis[i]}</div>'
 
 board_html = f"""
 <div class="board">
@@ -234,58 +215,55 @@ board_html = f"""
     {create_arm(2)}
     {create_arm(3)}
     <div class="star">⭐</div>
-    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; flex-wrap:wrap; gap:6px; width:180px; justify-content:center; z-index:10;">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; flex-wrap:wrap; gap:8px; width:200px; justify-content:center; z-index:10;">
         {center_tokens}
     </div>
 </div>
 """
 
-# This is the key line — using components.html instead of st.markdown
-components.html(board_html, height=800, scrolling=False)
+components.html(board_html, height=850, scrolling=False)
 
-# ────────────────────────────────────────────────
-# GAME CONTROLS
-# ────────────────────────────────────────────────
+# Controls
 curr = st.session_state.current_turn
 curr_name = names[curr]
 
-st.markdown(f"### Round {st.session_state.round_num}  –  Power: **{curr_name} {emojis[curr]}**")
+st.markdown(f"### Round {st.session_state.round_num} – Power Player: **{curr_name} {emojis[curr]}**")
 
-if st.button(f"Roll Dice – {curr_name}", type="primary", use_container_width=True):
+if st.button(f"ROLL DICE – {curr_name}", type="primary", use_container_width=True):
     placeholder = st.empty()
 
     for _ in range(8):
         v = random.choice([1,2,-1,-2])
-        col = "#44ff88" if v > 0 else "#ff4444"
+        col = "#66ff99" if v > 0 else "#ff4444"
         sym = "⚀" if abs(v)==1 else "⚁"
         placeholder.markdown(f"""
         <div style="text-align:center; margin:30px;">
-            <div style="width:130px;height:130px;margin:auto;background:#111133;border:8px solid #ddd;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:80px;color:{col};">
+            <div style="width:140px;height:140px;margin:auto;background:#111133;border:10px solid #ccc;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:90px;color:{col};">
                 {sym}
             </div>
-            <div style="font-size:32px;color:{col};">{v:+d}</div>
+            <div style="font-size:34px;color:{col};">{v:+d}</div>
         </div>
         """, unsafe_allow_html=True)
-        time.sleep(0.11)
+        time.sleep(0.1)
 
     roll = random.choice([1,2,-1,-2])
-    col = "#44ff88" if roll > 0 else "#ff4444"
+    col = "#66ff99" if roll > 0 else "#ff4444"
     sym = "⚀" if abs(roll)==1 else "⚁"
     placeholder.markdown(f"""
     <div style="text-align:center; margin:30px;">
-        <div style="width:130px;height:130px;margin:auto;background:#111133;border:8px solid #ddd;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:80px;color:{col};">
+        <div style="width:140px;height:140px;margin:auto;background:#111133;border:10px solid #ccc;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:90px;color:{col};">
             {sym}
         </div>
-        <div style="font-size:36px;color:{col};">{roll:+d}</div>
+        <div style="font-size:38px;color:{col};">{roll:+d}</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # Apply base move
+    # Base move for all
     for i in range(4):
         if st.session_state.positions[i] < 16:
             st.session_state.positions[i] += 1
 
-    # Extra move for power player
+    # Extra move for current player
     p = st.session_state.positions[curr]
     new_p = p + roll
     if 1 <= new_p <= 16:
@@ -306,8 +284,8 @@ with st.expander("Rules"):
 - Each player has their own path (1–15) → center star (16)
 - Every round **everyone** moves +1
 - Power player rolls extra: +1 / +2 / -1 / -2
-- First to exactly reach 16 wins
+- First to **exactly** reach 16 wins
 - Must land exactly (no overshooting)
     """)
 
-st.caption("Using components.html • rotated arms • tokens centered in cells • 2025 edition")
+st.caption("Improved overlap • centered tokens • higher contrast • Karachi 2026 edition")
