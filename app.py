@@ -1,22 +1,39 @@
 import streamlit as st
 import random
 import time
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="PowerDice X-Cross", page_icon="⭐", layout="wide")
 
-# Session state
+# ────────────────────────────────────────────────
+# SESSION STATE
+# ────────────────────────────────────────────────
 if "player_names" not in st.session_state:
     st.session_state.player_names = None
 
 if st.session_state.player_names is None:
     st.markdown("""
     <style>
-        .welcome {background: linear-gradient(135deg, #0a0015, #200033); padding:50px; border-radius:20px; text-align:center; box-shadow:0 0 50px #ff0066; margin:20px;}
-        .title {font-size:60px; background:linear-gradient(90deg,#ff0066,#00ccff,#ffff00); -webkit-background-clip:text; -webkit-text-fill-color:transparent;}
+        .welcome {
+            background: linear-gradient(135deg, #0a0015, #200033);
+            padding: 50px 20px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 50px #ff0066;
+            margin: 20px;
+        }
+        .title {
+            font-size: 60px;
+            background: linear-gradient(90deg, #ff0066, #00ccff, #ffff00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     </style>
     """, unsafe_allow_html=True)
 
     st.markdown('<div class="welcome"><h1 class="title">POWER DICE X-CROSS</h1><p style="font-size:22px; color:#ffcc00;">Reach the center star first!</p></div>', unsafe_allow_html=True)
+
+    st.markdown("### Enter player names (or keep defaults)", unsafe_allow_html=True)
 
     defaults = ["Player 1", "Player 2", "Player 3", "Player 4"]
     names_input = []
@@ -37,12 +54,16 @@ if st.session_state.player_names is None:
 
     st.stop()
 
-# Game variables
+# ────────────────────────────────────────────────
+# GAME VARIABLES
+# ────────────────────────────────────────────────
 names   = st.session_state.player_names
 emojis  = ["🔵", "🟠", "🟢", "🔴"]
 colors  = ["#3399ff", "#ff8800", "#44cc77", "#ff3366"]
 
-# Global styles
+# ────────────────────────────────────────────────
+# STYLES
+# ────────────────────────────────────────────────
 st.markdown("""
 <style>
     .board {
@@ -167,7 +188,7 @@ for i, col in enumerate(cols):
         """, unsafe_allow_html=True)
 
 # ────────────────────────────────────────────────
-# X-CROSS BOARD – FIXED VERSION
+# X-CROSS BOARD – USING components.html
 # ────────────────────────────────────────────────
 st.markdown("### X-Cross Path to Center Star")
 
@@ -201,7 +222,6 @@ def create_arm(player_idx):
     </div>
     """
 
-# Center star + tokens for winners
 center_tokens = ""
 for i in range(4):
     if st.session_state.positions[i] == 16:
@@ -220,11 +240,11 @@ board_html = f"""
 </div>
 """
 
-# This line was missing unsafe_allow_html=True → that's why you saw raw code
-st.markdown(board_html, unsafe_allow_html=True)
+# This is the key line — using components.html instead of st.markdown
+components.html(board_html, height=800, scrolling=False)
 
 # ────────────────────────────────────────────────
-# CONTROLS
+# GAME CONTROLS
 # ────────────────────────────────────────────────
 curr = st.session_state.current_turn
 curr_name = names[curr]
@@ -290,4 +310,4 @@ with st.expander("Rules"):
 - Must land exactly (no overshooting)
     """)
 
-st.caption("Fixed HTML rendering • rotated X arms • tokens move correctly")
+st.caption("Using components.html • rotated arms • tokens centered in cells • 2025 edition")
